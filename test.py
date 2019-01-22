@@ -171,8 +171,10 @@ def test(args, test_list, model_list, net_input_shape):
             # Change RGB to single slice of grayscale image for MS COCO 17 dataset.
             if args.dataset == 'mscoco17':
                 img_data = convert_img_data(img_data, 3)
+                num_slices = 1
+            elif args.dataset == 'luna16':
+                num_slices = img_data.shape[0]
 
-            num_slices = 1               
             logging.info('\ntest.test: eval_model.predict_generator')
             _, _, generate_test_batches = get_generator(args.dataset)
             output_array = eval_model.predict_generator(generate_test_batches(args.data_root_dir, [img],
