@@ -56,6 +56,14 @@ from time import gmtime, strftime
 from keras.utils import print_summary
 from utils.load_data import load_data, split_data
 from utils.model_helper import create_model
+import tensorflow as tf
+from keras.backend.tensorflow_backend import set_session
+config = tf.ConfigProto()
+config.gpu_options.allow_growth = True  # dynamically grow the memory used on the GPU
+config.log_device_placement = True  # to log device placement (on which device the operation ran)
+                                    # (nothing gets printed in Jupyter, only if you run it standalone)
+#sess = tf.Session(config=config)
+#set_session(sess)  # set this TensorFlow session as the default session for Keras
 
 time = strftime("%Y%m%d-%H%M%S", gmtime())
 RESOLUTION = 512  # Resolution of the input for the model.
@@ -82,7 +90,10 @@ def main(args):
     image = sitk.GetArrayFromImage(sitk.ReadImage(join(args.data_root_dir, 'imgs', train_list[0][0])))
     img_shape = image.shape # # (x, y, channels)
     if args.dataset == 'luna16':
-        net_input_shape = (img_shape[1], img_shape[2], args.slices)    
+        net_input_shape = (img_shape[1], img_shape[2], args.slices)  
+    elif args.dataset == 'brats':
+        net_input_shape = (img_shape[2], img_shape[3], args.slices)
+        print(net_input_shape)
     else:
         args.slices = 1
         if GRAYSCALE == True:
@@ -242,8 +253,8 @@ if __name__ == '__main__':
                              'then this number will be inferred, else this argument must be included.')
     # Enhancements: 
     # TODO: implement softmax entroyp loss function for multiclass segmentation
-    parser.add_argument('--dataset', type=str.lower, default='mscoco17', choices=['luna16', 'mscoco17'],
-                        help='Enter "mscoco17" for COCO dataset, "luna16" for CT images')
+    parser.add_argument('--dataset', type=str.lower, default='mscoco17', choices=['luna16', 'mscoco17', 'brats'],
+                        help='Enter "mscoco17" for COCO dataset, "luna16" for CT images, brats for Brats MRI images')
     parser.add_argument('--num_class', type=int, default=2, 
                         help='Number of classes to segment. Default is 2. If number of classes > 2, '
                             ' the loss function will be softmax entropy and only apply on SegCapsR3'

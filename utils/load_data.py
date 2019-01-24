@@ -93,7 +93,7 @@ def load_class_weights(root, split):
 
 def split_data(root_path, num_splits):
     mask_list = []
-    for ext in ('*.mhd', '*.hdr', '*.nii', '*.png'): #add png file support
+    for ext in ('*.mhd', '*.hdr', '*.nii', '*.nii.gz', '*.png'): #add png file support
         mask_list.extend(sorted(glob(join(root_path,'masks',ext)))) # check imgs instead of masks
 
     assert len(mask_list) != 0, 'Unable to find any files in {}'.format(join(root_path,'masks'))

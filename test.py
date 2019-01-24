@@ -59,7 +59,7 @@ matplotlib.use('Agg')
 plt.ioff()
 K.set_image_data_format('channels_last')
 
-RESOLUTION = 512
+RESOLUTION = 240
 GRAYSCALE = True
 
 
@@ -174,6 +174,11 @@ def test(args, test_list, model_list, net_input_shape):
                 num_slices = 1
             elif args.dataset == 'luna16':
                 num_slices = img_data.shape[0]
+            elif args.dataset == 'brats':
+                img_data = img_data[0]
+                num_slices = img_data.shape[0]
+                
+            print(img_data.shape)
 
             logging.info('\ntest.test: eval_model.predict_generator')
             _, _, generate_test_batches = get_generator(args.dataset)

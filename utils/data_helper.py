@@ -17,6 +17,7 @@ Tasks:
 import logging
 import utils.load_3D_data as ld3D
 import utils.load_2D_data as ld2D
+import utils.load_brats_data as ldBrats
 from enum import Enum, unique
 
 @unique
@@ -29,6 +30,10 @@ def get_generator(dataset):
         generate_train_batches = ld3D.generate_train_batches
         generate_val_batches = ld3D.generate_val_batches
         generate_test_batches = ld3D.generate_test_batches
+    elif dataset == 'brats':
+        generate_train_batches = ldBrats.generate_train_batches
+        generate_val_batches = ldBrats.generate_val_batches
+        generate_test_batches = ldBrats.generate_test_batches
     elif dataset == 'mscoco17':
         generate_train_batches = ld2D.generate_train_batches
         generate_val_batches = ld2D.generate_val_batches
