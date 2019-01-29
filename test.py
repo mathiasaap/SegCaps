@@ -175,10 +175,8 @@ def test(args, test_list, model_list, net_input_shape):
             elif args.dataset == 'luna16':
                 num_slices = img_data.shape[0]
             elif args.dataset == 'brats':
-                img_data = img_data[0]
-                num_slices = img_data.shape[0]
+                num_slices = img_data.shape[1]
                 
-            print(img_data.shape)
 
             logging.info('\ntest.test: eval_model.predict_generator')
             _, _, generate_test_batches = get_generator(args.dataset)
@@ -214,6 +212,15 @@ def test(args, test_list, model_list, net_input_shape):
                 print('Saving Output')
                 sitk.WriteImage(output_img, join(raw_out_dir, img[0][:-4] + '_raw_output' + img[0][-4:]))
                 sitk.WriteImage(output_mask, join(fin_out_dir, img[0][:-4] + '_final_output' + img[0][-4:]))
+            elif args.dataset == 'brats':
+                slice_img = sitk.Image(RESOLUTION,RESOLUTION,num_slices, sitk.sitkUInt8)
+                print(sitk_img.GetDimension())
+                output_img.CopyInformation(slice_img)
+                output_mask.CopyInformation(slice_img)
+    
+                print('Saving Output')
+                sitk.WriteImage(output_img, join(raw_out_dir, img[0][:-7] + '_raw_output' + img[0][-7:]))
+                sitk.WriteImage(output_mask, join(fin_out_dir, img[0][:-7] + '_final_output' + img[0][-7:]))
             else: # MS COCO 17
                 plt.imshow(output[0,:,:], cmap = 'gray')
                 plt.imsave(join(raw_out_dir, img[0][:-4] + '_raw_output' + img[0][-4:]), output[0,:,:])
@@ -236,39 +243,45 @@ def test(args, test_list, model_list, net_input_shape):
             print('Creating Qualitative Figure for Quick Reference')
             f, ax = plt.subplots(1, 3, figsize=(15, 5))
             
+            fileTypeLength = 4
+            if args.dataset == 'brats':
+                fileTypeLength = 7
+            
             if args.dataset == 'mscoco17':               
                 pass
             else: # 3D data
-                ax[0].imshow(img_data[img_data.shape[0] // 3, :, :], alpha=1, cmap='gray')
-                ax[0].imshow(output_bin[img_data.shape[0] // 3, :, :], alpha=0.5, cmap='Blues')
-                ax[0].imshow(gt_data[img_data.shape[0] // 3, :, :], alpha=0.2, cmap='Reds')
-                ax[0].set_title('Slice {}/{}'.format(img_data.shape[0] // 3, img_data.shape[0]))
+                if args.dataset == 'brats':
+                    img_data = img_data[0]
+                ax[0].imshow(img_data[num_slices // 3, :, :], alpha=1, cmap='gray')
+                ax[0].imshow(output_bin[num_slices // 3, :, :], alpha=0.5, cmap='Blues')
+                ax[0].imshow(gt_data[num_slices // 3, :, :], alpha=0.2, cmap='Reds')
+                ax[0].set_title('Slice {}/{}'.format(num_slices // 3, num_slices))
                 ax[0].axis('off')
     
-                ax[1].imshow(img_data[img_data.shape[0] // 2, :, :], alpha=1, cmap='gray')
-                ax[1].imshow(output_bin[img_data.shape[0] // 2, :, :], alpha=0.5, cmap='Blues')
-                ax[1].imshow(gt_data[img_data.shape[0] // 2, :, :], alpha=0.2, cmap='Reds')
-                ax[1].set_title('Slice {}/{}'.format(img_data.shape[0] // 2, img_data.shape[0]))
+                ax[1].imshow(img_data[num_slices // 2, :, :], alpha=1, cmap='gray')
+                ax[1].imshow(output_bin[num_slices // 2, :, :], alpha=0.5, cmap='Blues')
+                ax[1].imshow(gt_data[num_slices // 2, :, :], alpha=0.2, cmap='Reds')
+                ax[1].set_title('Slice {}/{}'.format(num_slices // 2, num_slices))
                 ax[1].axis('off')
     
-                ax[2].imshow(img_data[img_data.shape[0] // 2 + img_data.shape[0] // 4, :, :], alpha=1, cmap='gray')
-                ax[2].imshow(output_bin[img_data.shape[0] // 2 + img_data.shape[0] // 4, :, :], alpha=0.5,
+                ax[2].imshow(img_data[num_slices // 2 + num_slices // 4, :, :], alpha=1, cmap='gray')
+                ax[2].imshow(output_bin[num_slices // 2 + num_slices // 4, :, :], alpha=0.5,
                              cmap='Blues')
-                ax[2].imshow(gt_data[img_data.shape[0] // 2 + img_data.shape[0] // 4, :, :], alpha=0.2,
+                ax[2].imshow(gt_data[num_slices // 2 + num_slices // 4, :, :], alpha=0.2,
                              cmap='Reds')
                 ax[2].set_title(
-                    'Slice {}/{}'.format(img_data.shape[0] // 2 + img_data.shape[0] // 4, img_data.shape[0]))
+                    'Slice {}/{}'.format(num_slices // 2 + num_slices // 4, num_slices))
                 ax[2].axis('off')
 
                 fig = plt.gcf()
-                fig.suptitle(img[0][:-4])
+                fig.suptitle(img[0][:-fileTypeLength])
     
-                plt.savefig(join(fig_out_dir, img[0][:-4] + '_qual_fig' + '.png'),
+                plt.savefig(join(fig_out_dir, img[0][:-fileTypeLength] + '_qual_fig' + '.png'),
                             format='png', bbox_inches='tight')
                 plt.close('all')   
 
             # Compute metrics
-            row = [img[0][:-4]]
+            row = [img[0][:-fileTypeLength]]
             if args.compute_dice:
                 logging.info('\nComputing Dice')
                 dice_arr[i] = dc(output_bin, gt_data)

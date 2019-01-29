@@ -317,6 +317,7 @@ def generate_test_batches(root_path, test_list, net_input_shape, batchSize=1, nu
             scan_name = scan_name[0]
             path_to_np = join(root_path,'np_files',basename(scan_name)[:-3]+'npz')
             with np.load(path_to_np) as data:
+                print(data)
                 test_img = data['img']
         except:
             logging.info('\nPre-made numpy array not found for {}.\nCreating now...'.format(scan_name[:-4]))

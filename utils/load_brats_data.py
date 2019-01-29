@@ -61,7 +61,7 @@ mean = np.array([18.426106306720985, 24.430354760142666, 24.29803657467962, 19.4
 std = np.array([104.02684046042094, 136.06477850668273, 137.4833895418739, 109.29833288911334])
 
 def convert_data_to_numpy(root_path, img_name, no_masks=False, overwrite=False):
-    fname = img_name[:-4]
+    fname = img_name[:-7]
     numpy_path = join(root_path, 'np_files')
     img_path = join(root_path, 'imgs')
     mask_path = join(root_path, 'masks')
@@ -181,13 +181,13 @@ def generate_train_batches(root_path, train_list, net_input_shape, net, batchSiz
         for i, scan_name in enumerate(train_list):
             try:
                 scan_name = scan_name[0]
-                path_to_np = join(root_path,'np_files',basename(scan_name)[:-3]+'npz')
+                path_to_np = join(root_path,'np_files',basename(scan_name)[:-6]+'npz')
                 logging.info('\npath_to_np=%s'%(path_to_np))
                 with np.load(path_to_np) as data:
                     train_img = data['img']
                     train_mask = data['mask']
             except:
-                logging.info('\nPre-made numpy array not found for {}.\nCreating now...'.format(scan_name[:-4]))
+                logging.info('\nPre-made numpy array not found for {}.\nCreating now...'.format(scan_name[:-7]))
                 train_img, train_mask = convert_data_to_numpy(root_path, scan_name)
                 if np.array_equal(train_img,np.zeros(1)):
                     continue
@@ -261,12 +261,12 @@ def generate_val_batches(root_path, val_list, net_input_shape, net, batchSize=1,
         for i, scan_name in enumerate(val_list):
             try:
                 scan_name = scan_name[0]
-                path_to_np = join(root_path,'np_files',basename(scan_name)[:-3]+'npz')
+                path_to_np = join(root_path,'np_files',basename(scan_name)[:-6]+'npz')
                 with np.load(path_to_np) as data:
                     val_img = data['img']
                     val_mask = data['mask']
             except:
-                logging.info('\nPre-made numpy array not found for {}.\nCreating now...'.format(scan_name[:-4]))
+                logging.info('\nPre-made numpy array not found for {}.\nCreating now...'.format(scan_name[:-7]))
                 val_img, val_mask = convert_data_to_numpy(root_path, scan_name)
                 if np.array_equal(val_img,np.zeros(1)):
                     continue
@@ -317,17 +317,18 @@ def generate_test_batches(root_path, test_list, net_input_shape, batchSize=1, nu
                           stride=1, downSampAmt=1):
     # Create placeholders for testing
     logging.info('\nload_3D_data.generate_test_batches')
+    print("Batch size {}".format(batchSize))
     img_batch = np.zeros((np.concatenate(((batchSize,), net_input_shape))), dtype=np.float32)
     count = 0
     logging.info('\nload_3D_data.generate_test_batches: test_list=%s'%(test_list))
     for i, scan_name in enumerate(test_list):
         try:
             scan_name = scan_name[0]
-            path_to_np = join(root_path,'np_files',basename(scan_name)[:-3]+'npz')
+            path_to_np = join(root_path,'np_files',basename(scan_name)[:-6]+'npz')
             with np.load(path_to_np) as data:
                 test_img = data['img']
         except:
-            logging.info('\nPre-made numpy array not found for {}.\nCreating now...'.format(scan_name[:-4]))
+            logging.info('\nPre-made numpy array not found for {}.\nCreating now...'.format(scan_name[:-7]))
             test_img = convert_data_to_numpy(root_path, scan_name, no_masks=True)
             if np.array_equal(test_img,np.zeros(1)):
                 continue
@@ -340,8 +341,7 @@ def generate_test_batches(root_path, test_list, net_input_shape, batchSize=1, nu
             np.random.seed(None)
             subSampAmt = int(rand(1)*(test_img.shape[2]*0.05))
 
-        print(test_img[0].shape)
-        print(test_img[1].shape)
+        print(test_img.shape)
         indicies = np.arange(0, test_img.shape[2] - numSlices * (subSampAmt + 1) + 1, stride)
         for j in indicies:
             if img_batch.ndim == 4:
